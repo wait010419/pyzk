@@ -4,6 +4,7 @@ from datetime import datetime
 from socket import AF_INET, SOCK_DGRAM, SOCK_STREAM, socket, timeout
 from struct import pack, unpack
 import codecs
+import chardet
 
 from . import const
 from .attendance import Attendance
@@ -110,7 +111,7 @@ class ZK(object):
     """
     ZK main class
     """
-    def __init__(self, ip, port=4370, timeout=60, password=0, force_udp=False, ommit_ping=False, verbose=False, encoding='UTF-8'):
+    def __init__(self, ip, port=4370, timeout=60, password=0, force_udp=False, ommit_ping=False, verbose=False, encoding='UTF-8',encoding_name='gbk'):
         """
         Construct a new 'ZK' object.
 
@@ -141,6 +142,7 @@ class ZK(object):
         self.ommit_ping = ommit_ping
         self.verbose = verbose
         self.encoding = encoding
+        self.encoding_name = encoding_name
         self.tcp = not force_udp
         self.users = 0
         self.fingers = 0
@@ -1092,7 +1094,8 @@ class ZK(object):
                 uid, privilege, password, name, card, group_id, timezone, user_id = unpack('<HB5s8sIxBhI',userdata.ljust(28, b'\x00')[:28])
                 if uid > max_uid: max_uid = uid
                 password = (password.split(b'\x00')[0]).decode(self.encoding, errors='ignore')
-                name = (name.split(b'\x00')[0]).decode(self.encoding, errors='ignore').strip()
+                #name = (name.split(b'\x00')[0]).decode(self.encoding, errors='ignore').strip()
+                name = (name.split(b'\x00')[0]).decode(self.encoding_name, errors='ignore').strip()
                 group_id = str(group_id)
                 user_id = str(user_id)
                 #TODO: check card value and find in ver8
@@ -1106,7 +1109,8 @@ class ZK(object):
             while len(userdata) >= 72:
                 uid, privilege, password, name, card, group_id, user_id = unpack('<HB8s24sIx7sx24s', userdata.ljust(72, b'\x00')[:72])
                 password = (password.split(b'\x00')[0]).decode(self.encoding, errors='ignore')
-                name = (name.split(b'\x00')[0]).decode(self.encoding, errors='ignore').strip()
+                #name = (name.split(b'\x00')[0]).decode(self.encoding, errors='ignore').strip()
+                name = (name.split(b'\x00')[0]).decode(self.encoding_name, errors='ignore').strip()
                 group_id = (group_id.split(b'\x00')[0]).decode(self.encoding, errors='ignore').strip()
                 user_id = (user_id.split(b'\x00')[0]).decode(self.encoding, errors='ignore')
                 if uid > max_uid: max_uid = uid
